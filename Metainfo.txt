@@ -1,0 +1,23 @@
+Name of Quantlet : elephant_wiggle_trunk
+
+Published in : PRI
+
+Description : Use complex numbers as parameters to fit an elephant that wiggle its trunk
+
+Keywords : 
+- Complex analysis
+- Fourier Transform
+- Elephant Trunk Wiggling
+
+Author : Junjie Hu
+
+
+
+
+
+
+
+
+
+
+
