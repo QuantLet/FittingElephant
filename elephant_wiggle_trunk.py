@@ -39,6 +39,8 @@ Pseudo-mathematics and financial charlatanism: The effects of backtest overfitti
 
 import matplotlib
 
+conda install -c conda-forge ffmpeg
+
 matplotlib.use('TKAgg')
 from matplotlib import animation
 from numpy import append, cos, linspace, pi, sin, zeros
