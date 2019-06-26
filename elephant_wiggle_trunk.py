@@ -39,7 +39,11 @@ Pseudo-mathematics and financial charlatanism: The effects of backtest overfitti
 
 import matplotlib
 
+"""
+you might want to use the following in terminal if the graphviz does not work:
 conda install -c conda-forge ffmpeg
+All should be fine though if you use jupyter notebook
+"""
 
 matplotlib.use('TKAgg')
 from matplotlib import animation
