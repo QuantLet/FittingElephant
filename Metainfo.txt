@@ -1,4 +1,4 @@
-Name of Quantlet : elephant_wiggle_trunk
+Name of Quantlet : elephant_wiggle_trunk change to gene shape
 
 Published in : PRI
 
@@ -10,6 +10,7 @@ Keywords :
 - Elephant Trunk Wiggling
 
 Author : Junjie Hu, WKH 20200924
+Modified: Muhaimin
 
 
 
