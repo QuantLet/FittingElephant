@@ -45,7 +45,6 @@ conda install -c conda-forge ffmpeg
 All should be fine though if you use jupyter notebook
 """
 
-matplotlib.use('TKAgg')
 from matplotlib import animation
 from numpy import append, cos, linspace, pi, sin, zeros
 import matplotlib.pyplot as plt
