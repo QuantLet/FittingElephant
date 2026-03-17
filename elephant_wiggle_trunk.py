@@ -1,129 +1,97 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-vonNeuman_elephant.py
-    "With four parameters I can fit an elephant,
-       and with five I can make him wiggle his trunk."
+Created on Tue Mar 17 11:41:18 2026
 
-Original Versions:
-
-    Author[1]: Piotr A. Zolnierczuk (zolnierczukp at ornl dot gov)
-    Retrieved on 14 September 2011 from
-    http://www.johndcook.com/blog/2011/06/21/how-to-fit-an-elephant/
-Modified to wiggle trunk:
-    2 October 2011 by David Bailey (http://www.physics.utoronto.ca/~dbailey)
-
-    Author[2]:
-    Advanced Physics Laboratory
-    https://www.physics.utoronto.ca/~phy326/python/
-
-Based on the paper:
-    "Drawing an elephant with four complex parameters", by
-    Jurgen Mayer, Khaled Khairy, and Jonathon Howard,
-    Am. J. Phys. 78, 648 (2010), DOI:10.1119/1.3254017
-
-    The paper does not specify how the wiggle parameter controls the
-    trunk, so a guess was made.
-
-Inspired by John von Neumann's famous quote (above) about overfitting data.
-    Attributed to von Neumann by Enrico Fermi, as quoted by
-      Freeman Dyson in "A meeting with Enrico Fermi" in
-      Nature 427 (22 January 2004) p. 297
-      
-Python Version: 3.6
-Modified based on author[2]'s work
-Author: Junjie Hu
-
-Overfiting problem in trading strategy stated:
-Bailey, D., Borwein, J., Lopez de Prado, M., & Zhu, Q. (2014).
-Pseudo-mathematics and financial charlatanism: The effects of backtest overfitting on out-of-sample performance.
+@author: haerdle
 """
-
-import matplotlib
-
-"""
-you might want to use the following in terminal if the graphviz does not work:
-conda install -c conda-forge ffmpeg
-All should be fine though if you use jupyter notebook
-"""
-
-from matplotlib import animation
-from numpy import append, cos, linspace, pi, sin, zeros
+import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
-# elephant parameters, last one is the eye
-parameters = [50 - 30j, 18 + 8j, 12 - 10j, -14 - 60j, 20 + 20j]
+# Elephant parameters
+# last parameter controls trunk wiggle amplitude and eye position
+p = [50 - 30j, 18 + 8j, 12 - 10j, -14 - 60j, 20 + 20j]
 
 
 def fourier(t, C):
-    f = zeros(t.shape)
+    f = np.zeros_like(t, dtype=float)
     for k in range(len(C)):
-        f += C.real[k] * cos(k * t) + C.imag[k] * sin(k * t)
+        f += C[k].real * np.cos(k * t) + C[k].imag * np.sin(k * t)
     return f
 
 
 def elephant(t, p):
     npar = 6
+    Cx = np.zeros(npar, dtype=complex)
+    Cy = np.zeros(npar, dtype=complex)
 
-    Cx = zeros((npar,), dtype='complex')
-    Cy = zeros((npar,), dtype='complex')
+    Cx[1] = 1j * p[0].real
+    Cy[1] = p[3].imag + 1j * p[0].imag
 
-    Cx[1] = p[0].real * 1j
-    Cy[1] = p[3].imag + p[0].imag * 1j
-
-    Cx[2] = p[1].real * 1j
-    Cy[2] = p[1].imag * 1j
+    Cx[2] = 1j * p[1].real
+    Cy[2] = 1j * p[1].imag
 
     Cx[3] = p[2].real
-    Cy[3] = p[2].imag * 1j
+    Cy[3] = 1j * p[2].imag
 
     Cx[5] = p[3].real
 
-    x = append(fourier(t, Cy), [p[4].imag])
-    y = -append(fourier(t, Cx), [-p[4].imag])
+    x = np.append(fourier(t, Cy), [p[4].imag])
+    y = -np.append(fourier(t, Cx), [-p[4].imag])
 
     return x, y
 
 
-def init_plot():
-    # draw the body of the elephant
-    # create trunk
-    x, y = elephant(linspace(2 * pi + 0.9 * pi, 0.4 + 3.3 * pi, 1000), parameters)
-    for ii in range(len(y) - 1):
-        y[ii] -= sin(((x[ii] - x[0]) * pi / len(y))) * sin(float(0)) * parameters[4].real
-    trunk.set_data(x, y)
-    return trunk,
+# Body and trunk parameter ranges
+t_body = np.linspace(0.4 + 1.3 * np.pi, 2 * np.pi + 0.9 * np.pi, 1000)
+t_trunk = np.linspace(2 * np.pi + 0.9 * np.pi, 0.4 + 3.3 * np.pi, 1000)
+
+# Set up figure
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.set_xlim(-80, 100)
+ax.set_ylim(-80, 100)
+ax.set_aspect('equal')
+ax.axis('off')
+
+# Draw body once
+xb, yb = elephant(t_body, p)
+ax.plot(xb, yb, 'b.', ms=2)
+
+# Trunk line to animate
+trunk_line, = ax.plot([], [], 'b.', ms=2)
 
 
-def move_trunk(i):
-    x, y = elephant(linspace(2 * pi + 0.9 * pi, 0.4 + 3.3 * pi, 1000), parameters)
-    # move trunk to new position (but don't move eye stored at end or array)
-    for ii in range(len(y) - 1):
-        y[ii] -= sin(((x[ii] - x[0]) * pi / len(y))) * sin(float(i)) * parameters[4].real
-    trunk.set_data(x, y)
-    return trunk,
+def init():
+    xt, yt = elephant(t_trunk, p)
+    trunk_line.set_data(xt, yt)
+    return trunk_line,
 
 
-fig, ax = plt.subplots()
-# initial the elephant body
-x, y = elephant(t=linspace(0.4 + 1.3 * pi, 2 * pi + 0.9 * pi, 1000), p=parameters)
-plt.plot(x, y, 'b.')
-plt.xlim([-75, 90])
-plt.ylim([-70, 87])
-plt.axis('off')
-trunk, = ax.plot([], [], 'b.')  # initialize trunk
+def update(frame):
+    xt, yt = elephant(t_trunk, p)
 
-ani = animation.FuncAnimation(fig=fig,
-                              func=move_trunk,
-                              frames=1000,
-                              init_func=init_plot,
-                              interval=500,
-                              blit=False,
-                              repeat=True)
-plt.show()
+    # Wiggle only the trunk
+    phase = frame / 8.0
+    wiggle = np.sin(phase) * p[4].real
+
+    for i in range(len(yt) - 1):
+        yt[i] -= np.sin((xt[i] - xt[0]) * np.pi / len(yt)) * wiggle
+
+    trunk_line.set_data(xt, yt)
+    return trunk_line,
 
 
-Writer = animation.writers['ffmpeg']
+ani = FuncAnimation(
+    fig,
+    update,
+    frames=120,
+    init_func=init,
+    interval=50,
+    blit=True
+)
 
-metadata = dict(title='Elephant Trunk Wiggling', artist='Junjie Hu')
-writer = Writer(fps=30, metadata=metadata, bitrate=1800)
-ani.save(filename='elephant_trunk_wiggle.mp4', writer=writer)
+# This creates GIF file
+
+ani.save("elephant_wiggle.gif", writer="pillow", fps=20)
 
